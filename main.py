@@ -20,6 +20,7 @@ import numpy as np
 import pytesseract
 from PIL import Image
 from picamera import PiCamera
+from picamera import PiRGBArray
 from time import sleep
 
 ##### FUNCTIONS
@@ -82,11 +83,34 @@ def parseLicensePlate(img):
 
 ##### MAIN ENTRY
 
+# loop from https://www.pyimagesearch.com/2015/03/30/accessing-the-raspberry-pi-camera-with-opencv-and-python/
 camera = PiCamera()
-camera.start_preview()
-while 1:
-	sleep(SLEEP_TIME_BETWEEN_PICS)
-	camera.capture(TMP_PICTURE_PATH)
-	img = cv2.imread(TMP_PICTURE_PATH,cv2.IMREAD_COLOR)
-	parseLicensePlate(img)
-camera.stop_preview()
+camera.resolution = (640, 480)
+camera.framerate = 16
+rawCapture = PiRGCArray(camera, size=(640, 480))
+
+time.sleep(0.1)
+
+for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
+	# grab the raw NumPy array representing the image, then initialize the timestamp
+	# and occupied/unoccupied text
+	image = frame.array
+ 
+	# show the frame
+	cv2.imshow("Frame", image)
+	
+	# wait for user key
+	key = cv2.waitKey(1) & 0xFF
+	
+	# ggf. img = cv2.imread(TMP_PICTURE_PATH,cv2.IMREAD_COLOR)
+	parseLicensePlate(image)
+	
+	# wait for user key
+	key = cv2.waitKey(1) & 0xFF
+ 
+	# clear the stream in preparation for the next frame
+	rawCapture.truncate(0)
+ 
+	# if the `q` key was pressed, break from the loop
+	if key == ord("q"):
+		break
