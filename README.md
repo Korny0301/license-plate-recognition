@@ -1,16 +1,16 @@
-# license-plate-recognition
+# Python based License Plate Recognition
 License plate recognition used for model vehicles
 
-Based on:
+## Based on:
 
 https://circuitdigest.com/microcontroller-projects/license-plate-recognition-using-raspberry-pi-and-opencv
 
-Install instructions:
+## Install instructions:
 
 1) Install OpenCv:
 https://circuitdigest.com/microcontroller-projects/how-to-install-python-opencv-on-raspberry-pi
 
-Used ressources:
+## Used ressources:
 
 https://www.raspberrypi.org/documentation/usage/camera/raspicam/raspistill.md
 
