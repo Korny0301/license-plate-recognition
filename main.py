@@ -8,6 +8,10 @@ Created 2019/09/18 for Hackfest @Schenck Process
 # TODO need to guess this factor (or use machine learning to train system)
 CONTOUR_FACTOR = 0.018
 
+SLEEP_TIME_BETWEEN_PICS = 5
+
+TMP_PICTURE_PATH = '/home/pi/Desktop/tmp_img.jpg'
+
 ##### INCLUDES
 
 import cv2
@@ -15,6 +19,8 @@ import imutils
 import numpy as np
 import pytesseract
 from PIL import Image
+from picamera import PiCamera
+from time import sleep
 
 ##### FUNCTIONS
 
@@ -76,5 +82,11 @@ def parseLicensePlate(img):
 
 ##### MAIN ENTRY
 
-img = cv2.imread('4.jpg',cv2.IMREAD_COLOR)
-parseLicensePlate(img)
+camera = PiCamera()
+camera.start_preview()
+while 1:
+	sleep(SLEEP_TIME_BETWEEN_PICS)
+	camera.capture(TMP_PICTURE_PATH)
+	img = cv2.imread(TMP_PICTURE_PATH,cv2.IMREAD_COLOR)
+	parseLicensePlate(img)
+camera.stop_preview()
