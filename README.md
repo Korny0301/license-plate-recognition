@@ -26,6 +26,9 @@ Switch into virtual environment and install pip packets:
 '''
 workon cv
 pip install imutils
+pip install pytesseract
+sudo apt install tesseract-ocr
+sudo apt install libtesseract-dev
 '''
 
 ## Used ressources

@@ -18,10 +18,10 @@ import cv2
 import imutils
 import numpy as np
 import pytesseract
-from PIL import Image
-from picamera import PiCamera
-from picamera import PiRGBArray
-from time import sleep
+#from picamera import PiCamera
+import picamera
+from picamera.array import PiRGBArray
+import time
 
 ##### FUNCTIONS
 
@@ -56,61 +56,64 @@ def parseLicensePlate(img):
         print("No contour detected")
     else:
         detected = 1
+        print("Contour detected")
 
     if detected == 1:
         cv2.drawContours(img, [screenCnt], -1, (0, 255, 0), 3)
 
-    # Masking the part other than the number plate
-    mask = np.zeros(gray.shape,np.uint8)
-    new_image = cv2.drawContours(mask,[screenCnt],0,255,-1,)
-    new_image = cv2.bitwise_and(img,img,mask=mask)
+        # Masking the part other than the number plate
+        mask = np.zeros(gray.shape,np.uint8)
+        new_image = cv2.drawContours(mask,[screenCnt],0,255,-1,)
+        new_image = cv2.bitwise_and(img,img,mask=mask)
 
-    # Now crop
-    (x, y) = np.where(mask == 255)
-    (topx, topy) = (np.min(x), np.min(y))
-    (bottomx, bottomy) = (np.max(x), np.max(y))
-    Cropped = gray[topx:bottomx+1, topy:bottomy+1]
+        # Now crop
+        (x, y) = np.where(mask == 255)
+        (topx, topy) = (np.min(x), np.min(y))
+        (bottomx, bottomy) = (np.max(x), np.max(y))
+        Cropped = gray[topx:bottomx+1, topy:bottomy+1]
 
-    #Read the number plate
-    text = pytesseract.image_to_string(Cropped, config='--psm 11')
-    print("Detected Number is:",text)
+        # Read the number plate
+        text = pytesseract.image_to_string(Cropped, config='--psm 11')
+        print("Detected Number is:",text)
 
-    cv2.imshow('image',img)
-    cv2.imshow('Cropped',Cropped)
+        cv2.imshow('image',img)
+        cv2.imshow('Cropped',Cropped)
 
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
 
 ##### MAIN ENTRY
 
-# loop from https://www.pyimagesearch.com/2015/03/30/accessing-the-raspberry-pi-camera-with-opencv-and-python/
-camera = PiCamera()
-camera.resolution = (640, 480)
-camera.framerate = 16
-rawCapture = PiRGCArray(camera, size=(640, 480))
+SLEEP_TIME_BETWEEN_CAPTURES_S = 2
 
-time.sleep(0.1)
+running = True
+print("Started license plate recognition script,", time.ctime())
+last_iteration_time = time.time()
 
-for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
-    # grab the raw NumPy array representing the image, then initialize the timestamp
-    # and occupied/unoccupied text
-    image = frame.array
- 
-    # show the frame
-    cv2.imshow("Frame", image)
-    
-    # wait for user key
-    key = cv2.waitKey(1) & 0xFF
-    
-    # ggf. img = cv2.imread(TMP_PICTURE_PATH,cv2.IMREAD_COLOR)
-    parseLicensePlate(image)
-    
-    # wait for user key
-    key = cv2.waitKey(1) & 0xFF
- 
-    # clear the stream in preparation for the next frame
-    rawCapture.truncate(0)
- 
-    # if the `q` key was pressed, break from the loop
-    if key == ord("q"):
-        break
+with picamera.PiCamera() as camera:
+    #camera.led = False
+    camera.resolution = (640, 480)
+    camera.framerate = 15
+    while running:
+        camera.start_preview()
+        time.sleep(SLEEP_TIME_BETWEEN_CAPTURES_S)
+        
+        with picamera.array.PiRGBArray(camera) as stream:
+            camera.capture(stream, format='bgr')
+            image = stream.array
+            cv2.imwrite('tmp_image.jpg', image)
+            cv2.imshow("image", image)
+            if cv2.waitKey(0) & 0xFF == ord('q'):
+                running = False
+                break
+            print("Trying to parse license plate...")
+            parseLicensePlate(image)
+            
+        new_iteration_time = time.time()
+        iteration_diff = new_iteration_time - last_iteration_time
+        last_iteration_time = new_iteration_time
+        
+        print("New iteration after", iteration_diff)
+        
+    cv2.destroyAllWindows()
+        
