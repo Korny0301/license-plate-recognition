@@ -18,7 +18,6 @@ import cv2
 import imutils
 import numpy as np
 import pytesseract
-#from picamera import PiCamera
 import picamera
 from picamera.array import PiRGBArray
 import time
@@ -84,16 +83,15 @@ def parseLicensePlate(img):
 
 ##### MAIN ENTRY
 
-SLEEP_TIME_BETWEEN_CAPTURES_S = 2
+SLEEP_TIME_BETWEEN_CAPTURES_S = 0.5
 
 running = True
 print("Started license plate recognition script,", time.ctime())
 last_iteration_time = time.time()
 
 with picamera.PiCamera() as camera:
-    #camera.led = False
     camera.resolution = (640, 480)
-    camera.framerate = 15
+    camera.framerate = 5
     while running:
         camera.start_preview()
         time.sleep(SLEEP_TIME_BETWEEN_CAPTURES_S)
@@ -101,11 +99,11 @@ with picamera.PiCamera() as camera:
         with picamera.array.PiRGBArray(camera) as stream:
             camera.capture(stream, format='bgr')
             image = stream.array
-            cv2.imwrite('tmp_image.jpg', image)
-            cv2.imshow("image", image)
-            if cv2.waitKey(0) & 0xFF == ord('q'):
-                running = False
-                break
+            #cv2.imwrite('tmp_image.jpg', image)
+            #cv2.imshow("image", image)
+            #if cv2.waitKey(0) & 0xFF == ord('q'):
+            #    running = False
+            #    break
             print("Trying to parse license plate...")
             parseLicensePlate(image)
             
