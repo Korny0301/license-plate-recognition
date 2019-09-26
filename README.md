@@ -31,6 +31,21 @@ sudo apt install tesseract-ocr
 sudo apt install libtesseract-dev
 '''
 
+### 4) Install dependencies for LCD
+
+Used library for display driver ST7036:
+
+https://pypi.org/project/st7036/
+
+It is available via github:
+
+https://github.com/pimoroni/st7036
+
+'''
+workon cv
+pip install st7036
+'''
+
 ## Used ressources
 
 https://www.raspberrypi.org/documentation/usage/camera/raspicam/raspistill.md

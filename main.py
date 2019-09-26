@@ -8,7 +8,7 @@ Created 2019/09/18 for Hackfest @Schenck Process
 # TODO need to guess this factor (or use machine learning to train system)
 CONTOUR_FACTOR = 0.018
 
-SLEEP_TIME_BETWEEN_PICS = 5
+SLEEP_TIME_BETWEEN_CAPTURES_S = 0.5
 
 TMP_PICTURE_PATH = '/home/pi/Desktop/tmp_img.jpg'
 
@@ -21,6 +21,7 @@ import pytesseract
 import picamera
 from picamera.array import PiRGBArray
 import time
+from st7036-lcd import printLicensePlate
 
 ##### FUNCTIONS
 
@@ -42,7 +43,7 @@ def parseLicensePlate(img):
     for c in cnts:
         # approximate the contour
         peri = cv2.arcLength(c, True)
-        approx = cv2.approxPolyDP(c, 0.018 * peri, True)
+        approx = cv2.approxPolyDP(c, CONTOUR_FACTOR * peri, True)
 
         # if our approximated contour has four points, then
         # we can assume that we have found our screen
@@ -74,6 +75,10 @@ def parseLicensePlate(img):
         # Read the number plate
         text = pytesseract.image_to_string(Cropped, config='--psm 11')
         print("Detected Number is:",text)
+        
+        # now print found license plate on LCD
+        # TODO
+        #printLicensePlate(text)
 
         cv2.imshow('image',img)
         cv2.imshow('Cropped',Cropped)
@@ -82,8 +87,6 @@ def parseLicensePlate(img):
         cv2.destroyAllWindows()
 
 ##### MAIN ENTRY
-
-SLEEP_TIME_BETWEEN_CAPTURES_S = 0.5
 
 running = True
 print("Started license plate recognition script,", time.ctime())
