@@ -10,8 +10,8 @@ FRAME_RATE = 50
 SLEEP_TIME_BETWEEN_CAPTURES_S = 0.5
 RESOLUTION_X= 1280 # 640
 RESOLUTION_Y = 1024 # 480
-CROPPED_PERCENT_X = 30
-CROPPED_PERCENT_Y = 10
+CROPPED_PERCENT_X = 25
+CROPPED_PERCENT_Y = 15
 
 # debug settings
 ACTIVATE_IMAGE_SHOWS = 0
@@ -32,7 +32,7 @@ import re
 
 # check if given text is a plausible license plate
 def getLicensePlateText(text):
-    reg = re.findall(r".*\w\w[-]\w\w[-]\d\d\d.*", text)
+    reg = re.findall(r".*\w\w[-]\w\w[-]\d\d.*", text)
     return reg
 
 def parseLicensePlate(img):
@@ -53,8 +53,8 @@ def parseLicensePlate(img):
         cv2.waitKey(0)
 
     gray = cv2.cvtColor(imgCrop, cv2.COLOR_BGR2GRAY) #convert to grey scale
-    gray = cv2.bilateralFilter(gray, 11, 17, 17) #Blur to reduce noise
-    edged = cv2.Canny(gray, 30, 200) #Perform Edge detection
+    gray = cv2.bilateralFilter(gray, 50, 17, 217) #Blur to reduce noise
+    edged = cv2.Canny(gray, 100, 20) #Perform Edge detection
     
     if ACTIVATE_IMAGE_SHOWS:
         print("Showing gray image!")
