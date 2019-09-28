@@ -12,6 +12,7 @@ PORT = 8080
 CLEAR_DISPLAY_AFTER_NOPLATETRIES_CNT = 3
 IMG_PATH_ORIGINAL = "/home/pi/license-plate-recognition/plate_orig.jpg"
 IMG_PATH_PLATE = "/home/pi/license-plate-recognition/plate_crop.jpg"
+PLATE_TXT_FILE = "/home/pi/license-plate-recognition/plate.txt"
 
 # picture settings
 FRAME_RATE = 50
@@ -46,9 +47,17 @@ Handler = http.server.SimpleHTTPRequestHandler
 
 ##### FUNCTIONS
 
-def printLicensePlate(plateStr):
+def printLicensePlateOnLCD(plateStr):
     lcd.clear()
     lcd.write(plateStr)
+    
+def printLicensePlateInFile(plateStr):
+    with open(PLATE_TXT_FILE, "w") as f:
+        f.write(plateStr)
+        
+def printLicensePlate(plateStr):
+    printLicensePlateInFile(plateStr)
+    printLicensePlateOnLCD(plateStr)
 
 # check if given text is a plausible license plate
 def getLicensePlateText(text):
@@ -142,6 +151,7 @@ lcd = st7036.st7036(register_select_pin=22, rows=1, columns=8, spi_chip_select=0
 lcd.set_display_mode()
 lcd.set_contrast(40)
 lcd.clear()
+time.sleep(1)
 
 try:
     _thread.start_new_thread(start_license_plate, ())
