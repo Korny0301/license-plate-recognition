@@ -5,8 +5,13 @@ Created 2019/09/18 for Hackfest @Schenck Process
 
 ##### CONSTANTS
 
+# webserver settings
+PORT = 8080
+
 # global settings
 CLEAR_DISPLAY_AFTER_NOPLATETRIES_CNT = 3
+IMG_PATH_ORIGINAL = "/home/pi/license-plate-recognition/plate_orig.jpg"
+IMG_PATH_PLATE = "/home/pi/license-plate-recognition/plate_crop.jpg"
 
 # picture settings
 FRAME_RATE = 50
@@ -27,15 +32,23 @@ import numpy as np
 import pytesseract
 import picamera
 from picamera.array import PiRGBArray
-from st7036lcd import printLicensePlate
+import st7036
 import time
 import re
+import _thread
+import http.server
+import socketserver
 
 ##### GLOBAL VARIABLES
 
 counterNoPlates = 0
+Handler = http.server.SimpleHTTPRequestHandler
 
 ##### FUNCTIONS
+
+def printLicensePlate(plateStr):
+    lcd.clear()
+    lcd.write(plateStr)
 
 # check if given text is a plausible license plate
 def getLicensePlateText(text):
@@ -46,6 +59,9 @@ def getLicensePlateText(text):
 
 def parseLicensePlate(img):
     global counterNoPlates
+    
+    # store original image on filesystem for webserver
+    cv2.imwrite(IMG_PATH_ORIGINAL, img) 
     
     length_x = (RESOLUTION_X / 100 * CROPPED_PERCENT_X)
     length_y = (RESOLUTION_Y / 100 * CROPPED_PERCENT_Y)
@@ -83,6 +99,7 @@ def parseLicensePlate(img):
     if licensePlate != "":
         print("Detected License plate: ", licensePlate)
         printLicensePlate(licensePlate)
+        cv2.imwrite(IMG_PATH_PLATE, imgCrop) 
     else:
         counterNoPlates = counterNoPlates + 1
         if counterNoPlates >= CLEAR_DISPLAY_AFTER_NOPLATETRIES_CNT:
@@ -91,26 +108,47 @@ def parseLicensePlate(img):
             counterNoPlates = 0
         
     cv2.destroyAllWindows()
+    
+def start_webserver():
+    print("Starting webserver...")
+    with socketserver.TCPServer(("", PORT), Handler) as httpd:
+        print("serving at port", PORT)
+        httpd.serve_forever()
+            
+def start_license_plate():
+    # initialize global variables
+    counterNoPlates = 0
+
+    with picamera.PiCamera() as camera:
+        camera.resolution = (RESOLUTION_X, RESOLUTION_Y)
+        camera.framerate = FRAME_RATE
+        while True:
+            camera.start_preview()
+            time.sleep(SLEEP_TIME_BETWEEN_CAPTURES_S)
+        
+            with picamera.array.PiRGBArray(camera) as stream:
+                camera.capture(stream, format='bgr')
+                image = stream.array
+                print("Trying to parse license plate...")
+                parseLicensePlate(image)
+        
+        cv2.destroyAllWindows()
 
 ##### MAIN ENTRY
 
 print("Started license plate recognition script")
 
-# initialize global variables
-counterNoPlates = 0
+lcd = st7036.st7036(register_select_pin=22, rows=1, columns=8, spi_chip_select=0)
+lcd.set_display_mode()
+lcd.set_contrast(40)
+lcd.clear()
 
-with picamera.PiCamera() as camera:
-    camera.resolution = (RESOLUTION_X, RESOLUTION_Y)
-    camera.framerate = FRAME_RATE
-    while True:
-        camera.start_preview()
-        time.sleep(SLEEP_TIME_BETWEEN_CAPTURES_S)
-        
-        with picamera.array.PiRGBArray(camera) as stream:
-            camera.capture(stream, format='bgr')
-            image = stream.array
-            print("Trying to parse license plate...")
-            parseLicensePlate(image)
-        
-    cv2.destroyAllWindows()
-        
+try:
+    _thread.start_new_thread(start_license_plate, ())
+    _thread.start_new_thread(start_webserver, ())
+except:
+    print("Error: Could not start threads!")
+
+while True:
+    time.sleep(50)
+    pass

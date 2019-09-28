@@ -29,6 +29,7 @@ pip install imutils
 pip install pytesseract
 sudo apt install tesseract-ocr
 sudo apt install libtesseract-dev
+pip install flask
 ```
 
 ### 4) Install dependencies for LCD
