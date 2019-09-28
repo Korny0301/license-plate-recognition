@@ -33,16 +33,20 @@ import re
 
 ##### GLOBAL VARIABLES
 
-CounterNoPlates = 0
+counterNoPlates = 0
 
 ##### FUNCTIONS
 
 # check if given text is a plausible license plate
 def getLicensePlateText(text):
     reg = re.findall(r".*\w\w[-]\w\w[-]\d\d.*", text)
-    return reg
+    if len(reg) > 0:
+        return reg[0]
+    return ""
 
 def parseLicensePlate(img):
+    global counterNoPlates
+    
     length_x = (RESOLUTION_X / 100 * CROPPED_PERCENT_X)
     length_y = (RESOLUTION_Y / 100 * CROPPED_PERCENT_Y)
     start_int_x = int((RESOLUTION_X / 2) - length_x / 2)
@@ -80,17 +84,20 @@ def parseLicensePlate(img):
         print("Detected License plate: ", licensePlate)
         printLicensePlate(licensePlate)
     else:
-        CounterNoPlates = CounterNoPlates + 1
-        if CounterNoPlates >= CLEAR_DISPLAY_AFTER_NOPLATETRIES_CNT:
+        counterNoPlates = counterNoPlates + 1
+        if counterNoPlates >= CLEAR_DISPLAY_AFTER_NOPLATETRIES_CNT:
             print("Clearing display...")
             printLicensePlate("")
-            CounterNoPlates = 0
+            counterNoPlates = 0
         
     cv2.destroyAllWindows()
 
 ##### MAIN ENTRY
 
 print("Started license plate recognition script")
+
+# initialize global variables
+counterNoPlates = 0
 
 with picamera.PiCamera() as camera:
     camera.resolution = (RESOLUTION_X, RESOLUTION_Y)
