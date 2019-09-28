@@ -23,13 +23,13 @@ You need to add the under 1) created virtual environment to your favorite python
 
 Switch into virtual environment and install pip packets:
 
-'''
+```
 workon cv
 pip install imutils
 pip install pytesseract
 sudo apt install tesseract-ocr
 sudo apt install libtesseract-dev
-'''
+```
 
 ### 4) Install dependencies for LCD
 
@@ -41,10 +41,10 @@ It is available via github:
 
 https://github.com/pimoroni/st7036
 
-'''
+```
 workon cv
 pip install st7036
-'''
+```
 
 ## Used ressources
 
