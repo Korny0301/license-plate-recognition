@@ -15,17 +15,19 @@ import time
 ##### FUNCTIONS
 
 def printLicensePlate(plateStr):
-    # TODO
-    print("Dummy print for license plate:", plateStr)
+    lcd.clear()
+    #lcd.home()
+    lcd.write(plateStr)
+    #print("Dummy print for license plate:", plateStr)
 
 ##### MAIN ENTRY
 
-lcd = st7036.st7036(register_select_pin=10, rows=2, columns=8, spi_chip_select=0)
+lcd = st7036.st7036(register_select_pin=22, rows=1, columns=8, spi_chip_select=0)
 lcd.set_display_mode()
 lcd.set_contrast(40)
 lcd.clear()
-lcd.set_cursor_offset(0)
-lcd.write("Hello World!")
+#lcd.set_cursor_offset(0)
+#lcd.write("Hello World!")
 time.sleep(3)
 
-printLicensePlate("XX-YY-ZZZ")
+printLicensePlate("XX-YY-ZZ")

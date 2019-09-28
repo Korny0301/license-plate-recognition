@@ -5,6 +5,9 @@ Created 2019/09/18 for Hackfest @Schenck Process
 
 ##### CONSTANTS
 
+# global settings
+CLEAR_DISPLAY_AFTER_NOPLATETRIES_CNT = 3
+
 # picture settings
 FRAME_RATE = 50
 SLEEP_TIME_BETWEEN_CAPTURES_S = 0.5
@@ -24,9 +27,13 @@ import numpy as np
 import pytesseract
 import picamera
 from picamera.array import PiRGBArray
-#from st7036-lcd import printLicensePlate
+from st7036lcd import printLicensePlate
 import time
 import re
+
+##### GLOBAL VARIABLES
+
+CounterNoPlates = 0
 
 ##### FUNCTIONS
 
@@ -71,6 +78,13 @@ def parseLicensePlate(img):
     licensePlate = getLicensePlateText(text)
     if licensePlate != "":
         print("Detected License plate: ", licensePlate)
+        printLicensePlate(licensePlate)
+    else:
+        CounterNoPlates = CounterNoPlates + 1
+        if CounterNoPlates >= CLEAR_DISPLAY_AFTER_NOPLATETRIES_CNT:
+            print("Clearing display...")
+            printLicensePlate("")
+            CounterNoPlates = 0
         
     cv2.destroyAllWindows()
 
