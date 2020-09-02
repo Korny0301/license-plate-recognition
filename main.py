@@ -68,7 +68,8 @@ def printLicensePlate(plateStr):
 
 # check if given text is a plausible license plate
 def getLicensePlateText(text):
-    reg = re.findall(r"\w{1,3}[ ]\w{1,3}[ ]\d{1,4}", text)
+    # license plate can look like: "DASP123", "AURKS688", "DA SP 123", "DA SP123", "DA SP 1", " DA SP 12  ", ...
+    reg = re.findall(r"^\s*([A-Z]{1,3})\s*([A-Z]{2})\s*(\d{1,4})\s*", text)
     if len(reg) > 0:
         return reg[0]
     return ""
