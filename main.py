@@ -9,14 +9,14 @@ Created 2019/09/18 for Hackfest @Schenck Process
 PORT = 8080
 
 # global settings
-CLEAR_DISPLAY_AFTER_NOPLATETRIES_CNT = 3
+CLEAR_DISPLAY_AFTER_NOPLATETRIES_CNT = 5
 IMG_PATH_ORIGINAL = "/home/pi/license-plate-recognition/plate_orig.jpg"
 IMG_PATH_PLATE = "/home/pi/license-plate-recognition/plate_crop.jpg"
 PLATE_TXT_FILE = "/home/pi/license-plate-recognition/plate.txt"
 
 # picture settings
 FRAME_RATE = 50
-SLEEP_TIME_BETWEEN_CAPTURES_S = 0.5
+SLEEP_TIME_BETWEEN_CAPTURES_S = 0.3
 RESOLUTION_X= 1280 # 640
 RESOLUTION_Y = 1024 # 480
 #CROPPED_PERCENT_X = 25
@@ -157,14 +157,14 @@ def start_license_plate():
         camera.resolution = (RESOLUTION_X, RESOLUTION_Y)
         camera.framerate = FRAME_RATE
         while True:
-            camera.start_preview()
+            #camera.start_preview()
             time.sleep(SLEEP_TIME_BETWEEN_CAPTURES_S)
         
-            with picamera.array.PiRGBArray(camera) as stream:
-                camera.capture(IMG_PATH_ORIGINAL)
-                #image = stream.array
-                print("Trying to parse license plate...")
-                parseLicensePlate(IMG_PATH_ORIGINAL)
+            #with picamera.array.PiRGBArray(camera) as stream:
+            camera.capture(IMG_PATH_ORIGINAL)
+            #image = stream.array
+            print("Trying to parse license plate...")
+            parseLicensePlate(IMG_PATH_ORIGINAL)
         
         cv2.destroyAllWindows()
         alpr.unload()
