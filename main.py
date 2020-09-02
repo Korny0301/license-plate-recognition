@@ -51,6 +51,8 @@ locale.setlocale(locale.LC_ALL, 'C')
 counterNoPlates = 0
 alpr = Alpr("eu", "/etc/openalpr/openalpr.conf", "/usr/share/openalpr/runtime_data")
 Handler = http.server.SimpleHTTPRequestHandler
+# license plate can look like: "DASP123", "AURKS688", "DA SP 123", "DA SP123", "DA SP 1", " DA SP 12  ", ...
+RegexPlate = re.compile(r"^\s*([A-Z]{1,3})\s*([A-Z]{2})\s*(\d{1,4})\s*")
 
 ##### FUNCTIONS
 
@@ -68,10 +70,9 @@ def printLicensePlate(plateStr):
 
 # check if given text is a plausible license plate
 def getLicensePlateText(text):
-    # license plate can look like: "DASP123", "AURKS688", "DA SP 123", "DA SP123", "DA SP 1", " DA SP 12  ", ...
-    reg = re.findall(r"^\s*([A-Z]{1,3})\s*([A-Z]{2})\s*(\d{1,4})\s*", text)
-    if len(reg) > 0:
-        return reg[0]
+    m = RegexPlate.match(text)
+    if len(m.groups()) >= 2:
+        return m.group(0) + "-" + m.group(1) + "-" + m.group(2)
     return ""
 
 def parseLicensePlate(img):
@@ -112,7 +113,7 @@ def parseLicensePlate(img):
     # try to parse modified image to text
     #text = pytesseract.image_to_string(imgCrop, config='--psm 11')
     results = alpr.recognize_file(img)
-    print(json.dumps(results, indent=4))
+    #print(json.dumps(results, indent=4))
     text = ""
 
     if len(results['results']) == 0:
