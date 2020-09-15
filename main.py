@@ -71,8 +71,8 @@ def printLicensePlate(plateStr):
 # check if given text is a plausible license plate
 def getLicensePlateText(text):
     m = RegexPlate.match(text)
-    if len(m.groups()) >= 2:
-        return m.group(0) + "-" + m.group(1) + "-" + m.group(2)
+    if m and (len(m.groups()) >= 3):
+        return m.group(1) + "-" + m.group(2) + "-" + m.group(3)
     return ""
 
 def parseLicensePlate(img):
@@ -128,7 +128,9 @@ def parseLicensePlate(img):
         print("Detected License plate: ", licensePlate)
         printLicensePlate(licensePlate)
         coord = results['results'][0]['coordinates']
-        imgCrop = img[coord[0]['y']:coord[2]['y'], coord[0]['x']:coord[2]['x']]
+        print(coord)
+        imgCrop = cv2.imread(img)
+        imgCrop = imgCrop[coord[0]['y']:coord[2]['y'], coord[0]['x']:coord[2]['x']]
         cv2.imwrite(IMG_PATH_PLATE, imgCrop)
         if ACTIVATE_IMAGE_SHOWS:
             print("Showing cropped image!")
