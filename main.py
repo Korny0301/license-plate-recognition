@@ -11,6 +11,7 @@ PORT = 8080
 # global settings
 CLEAR_DISPLAY_AFTER_NOPLATETRIES_CNT = 5
 IMG_PATH_ORIGINAL = "/home/pi/license-plate-recognition/plate_orig.jpg"
+IMG_PATH_ZOOMED = "/home/pi/license-plate-recognition/plate_zoomed.jpg"
 IMG_PATH_PLATE = "/home/pi/license-plate-recognition/plate_crop.jpg"
 PLATE_TXT_FILE = "/home/pi/license-plate-recognition/plate.txt"
 
@@ -43,6 +44,7 @@ import locale
 from openalpr import Alpr
 import json
 import locale
+import os
 
 locale.setlocale(locale.LC_ALL, 'C')
 
@@ -129,9 +131,33 @@ def parseLicensePlate(img):
         printLicensePlate(licensePlate)
         coord = results['results'][0]['coordinates']
         print(coord)
+        
+        # create image of license plate only
         imgCrop = cv2.imread(img)
         imgCrop = imgCrop[coord[0]['y']:coord[2]['y'], coord[0]['x']:coord[2]['x']]
-        cv2.imwrite(IMG_PATH_PLATE, imgCrop)
+        cv2.imwrite(IMG_PATH_PLATE + ".tmp.jpg", imgCrop)
+        os.rename(IMG_PATH_PLATE + ".tmp.jpg", IMG_PATH_PLATE)
+        
+        # create image of mainly truck
+        imgTruck = cv2.imread(img)
+        imgHeight, imgWidth, imgChannels = imgTruck.shape
+        plate_len_x = coord[2]['x'] - coord[0]['x']
+        truck_x1 = 0
+        x_fact_left = 1.60
+        if coord[0]['x'] - x_fact_left*plate_len_x > 0 : truck_x1 = coord[0]['x'] - x_fact_left*plate_len_x
+        truck_x2 = imgWidth
+        x_fact_right = 1.10
+        if coord[2]['x'] + x_fact_right*plate_len_x < imgWidth : truck_x2 = coord[2]['x'] + x_fact_right*plate_len_x
+        truck_y1 = 0
+        y_fact_up = 3
+        if coord[0]['y'] - y_fact_up*plate_len_x > 0 : truck_y1 = coord[0]['y'] - y_fact_up*plate_len_x
+        truck_y2 = imgHeight
+        y_fact_down = 1
+        if coord[2]['y'] + y_fact_down*plate_len_x < imgHeight : truck_y2 = coord[2]['y'] + y_fact_down*plate_len_x
+        imgTruck = imgTruck[int(truck_y1):int(truck_y2), int(truck_x1):int(truck_x2)]
+        cv2.imwrite(IMG_PATH_ZOOMED + ".tmp.jpg", imgTruck)
+        os.rename(IMG_PATH_ZOOMED + ".tmp.jpg", IMG_PATH_ZOOMED)
+        
         if ACTIVATE_IMAGE_SHOWS:
             print("Showing cropped image!")
             cv2.imshow('image', imgCrop)
@@ -163,8 +189,9 @@ def start_license_plate():
             time.sleep(SLEEP_TIME_BETWEEN_CAPTURES_S)
         
             #with picamera.array.PiRGBArray(camera) as stream:
-            camera.capture(IMG_PATH_ORIGINAL)
-            #image = stream.array
+            camera.capture(IMG_PATH_ORIGINAL + ".tmp.jpg")
+            os.rename(IMG_PATH_ORIGINAL + ".tmp.jpg", IMG_PATH_ORIGINAL)
+
             print("Trying to parse license plate...")
             parseLicensePlate(IMG_PATH_ORIGINAL)
         
