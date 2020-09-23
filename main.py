@@ -20,8 +20,6 @@ FRAME_RATE = 50
 SLEEP_TIME_BETWEEN_CAPTURES_S = 0.3
 RESOLUTION_X= 1280 # 640
 RESOLUTION_Y = 1024 # 480
-#CROPPED_PERCENT_X = 25
-#CROPPED_PERCENT_Y = 15
 
 # debug settings
 ACTIVATE_IMAGE_SHOWS = 0
@@ -81,39 +79,7 @@ def parseLicensePlate(img):
     global counterNoPlates
     global alpr
     
-    # store original image on filesystem for webserver
-    #cv2.imwrite(IMG_PATH_ORIGINAL, img) 
-    
-    #length_x = (RESOLUTION_X / 100 * CROPPED_PERCENT_X)
-    #length_y = (RESOLUTION_Y / 100 * CROPPED_PERCENT_Y)
-    #start_int_x = int((RESOLUTION_X / 2) - length_x / 2)
-    #start_int_y = int((RESOLUTION_Y / 2) - length_y / 2)
-    #length_int_x = int(length_x)
-    #length_int_y = int(length_y)
-    #imgCrop = img[start_int_y:start_int_y+length_int_y, start_int_x:start_int_x+length_int_x]
-    
-    #if ACTIVATE_IMAGE_SHOWS:
-    #    print("Showing normal image")
-    #    cv2.imshow('image',img)
-    #    cv2.waitKey(0)
-    #    print("Showing cropped image!")
-    #    cv2.imshow('image',imgCrop)
-    #    cv2.waitKey(0)
-
-    #gray = cv2.cvtColor(imgCrop, cv2.COLOR_BGR2GRAY) #convert to grey scale
-    #gray = cv2.bilateralFilter(gray, 50, 17, 217) #Blur to reduce noise
-    #edged = cv2.Canny(gray, 100, 20) #Perform Edge detection
-    
-    #if ACTIVATE_IMAGE_SHOWS:
-    #    print("Showing gray image!")
-    #    cv2.imshow('image', gray)
-    #    cv2.waitKey(0)
-    #    print("Showing edged image!")
-    #    cv2.imshow('image', edged)
-    #    cv2.waitKey(0)
-
     # try to parse modified image to text
-    #text = pytesseract.image_to_string(imgCrop, config='--psm 11')
     results = alpr.recognize_file(img)
     #print(json.dumps(results, indent=4))
     text = ""
@@ -143,16 +109,16 @@ def parseLicensePlate(img):
         imgHeight, imgWidth, imgChannels = imgTruck.shape
         plate_len_x = coord[2]['x'] - coord[0]['x']
         truck_x1 = 0
-        x_fact_left = 1.60
+        x_fact_left = 2.15
         if coord[0]['x'] - x_fact_left*plate_len_x > 0 : truck_x1 = coord[0]['x'] - x_fact_left*plate_len_x
         truck_x2 = imgWidth
-        x_fact_right = 1.10
+        x_fact_right = 1.30
         if coord[2]['x'] + x_fact_right*plate_len_x < imgWidth : truck_x2 = coord[2]['x'] + x_fact_right*plate_len_x
         truck_y1 = 0
-        y_fact_up = 3
+        y_fact_up = 2.7
         if coord[0]['y'] - y_fact_up*plate_len_x > 0 : truck_y1 = coord[0]['y'] - y_fact_up*plate_len_x
         truck_y2 = imgHeight
-        y_fact_down = 1
+        y_fact_down = 1.05
         if coord[2]['y'] + y_fact_down*plate_len_x < imgHeight : truck_y2 = coord[2]['y'] + y_fact_down*plate_len_x
         imgTruck = imgTruck[int(truck_y1):int(truck_y2), int(truck_x1):int(truck_x2)]
         cv2.imwrite(IMG_PATH_ZOOMED + ".tmp.jpg", imgTruck)
